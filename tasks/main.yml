@@ -1,0 +1,65 @@
+---
+- name: Install Required Packages
+  apt: name={{ item }} state=installed update_cache=yes
+  with_items: "{{required_packages}}"
+
+
+- name: get stats on nvm
+  stat: path="{{ nvm_dest }}"
+  register: nvm_stat
+
+- name: create .nvm directory
+  file:
+    path: "{{ nvm_dest }}"
+    group: "{{ nvm_user }}"
+    owner: "{{ nvm_user }}"
+    mode: 0755
+    recurse: yes
+    state: directory
+  when: not nvm_stat.stat.exists
+
+- name: download nvm script
+  get_url:
+    dest: "{{ nvm_dest }}"
+    url: https://raw.githubusercontent.com/creationix/nvm/{{ nvm_version }}/nvm.sh
+
+- name: update .nvm dir permission
+  file:
+    path: "{{ nvm_dest }}"
+    group: "{{ nvm_user }}"
+    owner: "{{ nvm_user }}"
+    mode: 0755
+    recurse: yes
+    state: directory
+
+
+- name: add nvm to ~/.bashrc
+  lineinfile: dest="{{ nvm_working_path }}/.bashrc" line="source ~/.nvm/nvm.sh"
+
+
+# - name: get stats on node
+#   stat: path="{{ nvm_dest }}/versions/node/v{{ nvm_node_version }}"
+#   register: node_stat
+
+- name: install node
+  shell: "source {{ nvm_dest }}/nvm.sh && nvm install {{ item }}"
+  args:
+     executable: /bin/bash
+  with_items: "{{nvm_node_versions}}"
+  #when: not node_stat.stat.exists nvm_node_version={{item}}
+
+- name: set default Node version {{ nvm_default_node_version }} to be used in new shell
+  shell: "source {{nvm_dest}}/nvm.sh && nvm alias default {{nvm_default_node_version}}"
+  args:
+     executable: /bin/bash
+  #when: not node_stat.stat.exists
+
+- name: install npm module(s)
+  shell: bash -lc "source {{ nvm_dest }}/nvm.sh && nvm use {{ item.0 }} && npm install -g {{ item.1.pkg }}@{{ item.1.version }}"
+  become: true
+  become_user: "{{nvm_user}}"
+  with_nested: 
+    - "{{ nvm_node_versions }}"
+    - "{{ nvm_npm_pkgs }}"
+  
+
