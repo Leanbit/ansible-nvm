@@ -1,7 +1,8 @@
 ---
 nvm_version: "v0.31.3"
 nvm_default_node_version: "6.3.0"
-nvm_node_versions: ["{{nvm_default_node_version}}"]
+nvm_node_versions: 
+  - "{{nvm_default_node_version}}"
 nvm_user: ubuntu
 nvm_npm_pkgs: 
   - pkg: bower
