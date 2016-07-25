@@ -45,6 +45,8 @@
   shell: "source {{ nvm_dest }}/nvm.sh && nvm install {{ item }}"
   args:
      executable: /bin/bash
+  become: true
+  become_user: "{{nvm_user}}"
   with_items: "{{nvm_node_versions}}"
   #when: not node_stat.stat.exists nvm_node_version={{item}}
 
@@ -52,6 +54,8 @@
   shell: "source {{nvm_dest}}/nvm.sh && nvm alias default {{nvm_default_node_version}}"
   args:
      executable: /bin/bash
+  become: true
+  become_user: "{{nvm_user}}"
   #when: not node_stat.stat.exists
 
 - name: install npm module(s)
