@@ -15,6 +15,7 @@
 
 - name: run nvm script
   command: "bash {{ nvm_working_path }}/install.sh"
+  become: true
   become_user: "{{nvm_user}}"
   when: not nvm_stat.stat.exists
 
